@@ -84,15 +84,15 @@ const createUser = async function (req, res) {
         }
         const salt = bcrypt.genSaltSync(10);
         const encryptPassword = bcrypt.hashSync(password, salt);
-
+        if(address){
+            if (typeof address != "object") {
+                return res.status(400).send({ status: false, message: "shipping should be an object" })
+            }
         const address2=JSON.parse(address)
         address=address2
-        
         if (!isValidRequest(address)) {
             return res.status(400).send({ status: false, message: "please enter address " })
         }
-
-
         const { shipping, billing } = address
 
         if (!(isValid(shipping.street) && isValid(shipping.city) && isValid(shipping.pincode))) {
@@ -104,7 +104,7 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: "please enter fields of billing" })
 
         }
-
+    }
         const user = {
             fname, lname, email, profileImage, phone, password: encryptPassword, address
         }

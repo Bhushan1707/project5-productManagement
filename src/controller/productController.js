@@ -1,5 +1,5 @@
 const productModel = require("../model/productModel");
-// const validUrl = require('valid-url');
+const validUrl = require('valid-url');
 const { isValidRequest, isValid, isValidObjectId, nameRegex, emailRegex, phoneRegex, passRegex, priceRegex } = require('../validators/validator')
 
 const aws = require("aws-sdk")
@@ -169,7 +169,6 @@ const updateProduct = async function (req, res) {
         let data = req.body
         let files = req.files
         let { title, description, price, isFreeShipping, style, availableSizes, installments } = data
-
         if (!isValidObjectId(productId)) return res.status(400).send({ status: false, message: "please enter valid Id in params" })
 
         let product = await productModel.findById(productId)
@@ -200,26 +199,26 @@ const updateProduct = async function (req, res) {
         }
 
         let productImage;
-        // if (files && files.length > 0) {
-        //     var uploadedFileURL = await aws.uploadFile(files[0]);
-        //     productImage = uploadedFileURL;
-        //     if (!validUrl.isUri(uploadedFileURL)) {
-        //         return res.status(400).send({ status: false, msg: 'invalid uploadFileUrl' })
-        //     }
-        // }
-        if (files && files.length > 0 )
-        {
-
-            if (files )
-            {
-                let uploadedFileURL = await uploadFile(files[0])
-                
-            }
-            else
-            {
-                return res.status(400).send({ message: "File link not created" })
+        if (files && files.length > 0) {
+            var uploadedFileURL = await aws.uploadFile(files[0]);
+            productImage = uploadedFileURL;
+            if (!validUrl.isUri(uploadedFileURL)) {
+                return res.status(400).send({ status: false, msg: 'invalid uploadFileUrl' })
             }
         }
+        // if (files && files.length > 0 )
+        // {
+
+        //     if (files )
+        //     {
+        //         let uploadedFileURL = await uploadFile(files[0])
+                
+        //     }
+        //     else
+        //     {
+        //         return res.status(400).send({ message: "File link not created" })
+        //     }
+        // }
             if (availableSizes)
             {
                 let arr = availableSizes.split(",").map(el => el.trim())
@@ -236,11 +235,12 @@ const updateProduct = async function (req, res) {
                 if (!Number(installments) || Number(installments) <= 0)
                     return res.status(400).send({ status: false, mesage: "Please enter valid installments" })
             }
+            
             let update = await productModel.findOneAndUpdate({ _id: productId },
                 {
                     $set: {
                         title: title, description: description, price: price,
-                        isFreeShipping: isFreeShipping, productImage: productImage,
+                        isFreeShipping: isFreeShipping, productImage: uploadedFileURL,
                         style: style, availableSizes: availableSizes, installments: installments
                     }
                 },
@@ -249,6 +249,7 @@ const updateProduct = async function (req, res) {
         
     } catch (err)
     {
+        console.log
         return res.status(500).send({ status: false, message: err.massage })
     }
 }
